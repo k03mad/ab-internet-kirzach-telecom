@@ -6,9 +6,11 @@
 
 ## Установка
 
-1. Скачайте архив **`ab-internet-kirzach-telecom.zip`** из этого репозитория (или [с каталога провайдеров AnyBalance](https://anybalance.ru/catalog/), когда провайдер будет опубликован).
+1. Скачайте архив **`ab-internet-kirzach-telecom.zip`** из этого репозитория (кнопка **Code → Download ZIP** или со страницы релизов).
 2. В приложении AnyBalance: **Меню → Провайдеры → Установить из файла** → выберите скачанный zip.
 3. Создайте аккаунт, укажите **логин и пароль** от личного кабинета lk.kirzhachtelecom.ru.
+
+> Провайдера пока нет в каталоге AnyBalance (https://anybalance.ru/catalog/): каталог наполняется из официального репозитория `dukei/any-balance-providers`, а туда провайдер ещё не добавлен (см. раздел «Публикация»).
 
 ## Счётчики
 
@@ -44,6 +46,16 @@ KT_LOGIN=<логин> KT_PASS=<пароль> node test-harness.js
 ## Версии
 
 - **v3** — текущая (см. `provider/history.xml`)
+
+## Публикация в каталоге AnyBalance
+
+Чтобы провайдер появился в каталоге AnyBalance (https://anybalance.ru/catalog/), его нужно добавить в официальный репозиторий `dukei/any-balance-providers` (локально он склонирован в `../any-balance-providers`):
+
+1. Сделать fork `dukei/any-balance-providers` в своём аккаунте GitHub.
+2. Скопировать папку `provider/` в `providers/ab-internet-kirzach-telecom/` в форке.
+3. Открыть Pull Request с изменениями.
+
+После принятия PR провайдер появится в каталоге, и его можно будет устанавливать прямо из приложения AnyBalance.
 
 ## Лицензия
 
