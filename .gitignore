@@ -1,0 +1,4 @@
+# AnyBalance provider repo
+# Тестовые артефакты (куки содержат логин пользователя — НЕ коммитить)
+ck_harness.txt
+*.log
