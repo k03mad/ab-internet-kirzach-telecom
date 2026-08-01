@@ -22,8 +22,7 @@
 ab-internet-kirzach-telecom/
 ├── AGENTS.md                # этот документ
 ├── test-harness.js          # стенд для тестирования провайдера (Node.js)
-├── install-zip/             # готовый установочный архив
-│   └── ab-internet-kirzach-telecom.zip
+├── build-zip.sh             # сборка установочного архива (локально)
 └── provider/                # исходники провайдера
     ├── anybalance-manifest.xml
     ├── preferences.xml
@@ -209,7 +208,12 @@ KT_LOGIN=<логин> KT_PASS=<пароль> node test-harness.js
 `install-zip/ab-internet-kirzach-telecom.zip` (через python3 zipfile — утилиты `zip`
 в Termux нет) и печатает список файлов архива.
 
-**НЕ включать в архив**: `AGENTS.md`, `test-harness.js`, `ck_harness.txt`, сам zip (архив собирается в `../install-zip/`, вне папки `provider/`).
+**ВАЖНО**: архив в git не хранится (папка `install-zip/` в `.gitignore`) — он нужен
+только для локальной проверки и установки вручную. Опубликованные версии выкладываются
+на страницу релизов GitHub (через `gh release create <тег> install-zip/*.zip`) —
+оттуда пользователи и скачивают провайдера.
+
+**НЕ включать в архив**: `AGENTS.md`, `test-harness.js`, `ck_harness.txt`, сам zip.
 
 ---
 
