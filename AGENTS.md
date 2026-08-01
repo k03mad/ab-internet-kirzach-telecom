@@ -22,7 +22,8 @@
 ab-internet-kirzach-telecom/
 ├── AGENTS.md                # этот документ
 ├── test-harness.js          # стенд для тестирования провайдера (Node.js)
-├── ab-internet-kirzach-telecom.zip  # готовый установочный архив
+├── install-zip/             # готовый установочный архив
+│   └── ab-internet-kirzach-telecom.zip
 └── provider/                # исходники провайдера
     ├── anybalance-manifest.xml
     ├── preferences.xml
@@ -204,13 +205,13 @@ cd /data/data/com.termux/files/home/git/ab-internet-kirzach-telecom/provider
 python3 - <<'EOF'
 import zipfile, os
 files = ['anybalance-manifest.xml', 'preferences.xml', 'main.js', 'library.js', 'history.xml', 'icon.png']
-with zipfile.ZipFile('../ab-internet-kirzach-telecom.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+with zipfile.ZipFile('../install-zip/ab-internet-kirzach-telecom.zip', 'w', zipfile.ZIP_DEFLATED) as z:
     for f in files:
         z.write(f, f)
 EOF
 ```
 
-**НЕ включать в архив**: `AGENTS.md`, `test-harness.js`, `ck_harness.txt`, сам zip (zip лежит в корне репы, вне папки `provider/`).
+**НЕ включать в архив**: `AGENTS.md`, `test-harness.js`, `ck_harness.txt`, сам zip (архив собирается в `../install-zip/`, вне папки `provider/`).
 
 ---
 
