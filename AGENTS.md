@@ -198,18 +198,16 @@ KT_LOGIN=<логин> KT_PASS=<пароль> node test-harness.js
 
 ## 6. Сборка архива
 
-Архив — zip с 6 файлами провайдера **в корне** (без вложенной папки!):
+Архив — zip с 6 файлами провайдера **в корне** (без вложенной папки!).
+Просто запустить из корня репы:
 
 ```bash
-cd /data/data/com.termux/files/home/git/ab-internet-kirzach-telecom/provider
-python3 - <<'EOF'
-import zipfile, os
-files = ['anybalance-manifest.xml', 'preferences.xml', 'main.js', 'library.js', 'history.xml', 'icon.png']
-with zipfile.ZipFile('../install-zip/ab-internet-kirzach-telecom.zip', 'w', zipfile.ZIP_DEFLATED) as z:
-    for f in files:
-        z.write(f, f)
-EOF
+./build-zip.sh
 ```
+
+Скрипт проверяет наличие всех 6 файлов, собирает
+`install-zip/ab-internet-kirzach-telecom.zip` (через python3 zipfile — утилиты `zip`
+в Termux нет) и печатает список файлов архива.
 
 **НЕ включать в архив**: `AGENTS.md`, `test-harness.js`, `ck_harness.txt`, сам zip (архив собирается в `../install-zip/`, вне папки `provider/`).
 
