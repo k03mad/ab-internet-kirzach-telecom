@@ -110,7 +110,12 @@ ab-internet-kirzach-telecom/
 
 ## 3. Библиотека `AB.*` (library.js)
 
-Загружается первой, предоставляет помощники:
+`library.js` — это **стандартная библиотека-модуль AnyBalance** (готовая, не наша логика):
+минифицированная сборка из официального репо `../any-balance-providers/modules/library/build/head/library.min.js`
+(исходник — `modules/library/source/library.js`). Внутри: расширения стандартных объектов
+(`String.prototype.htmlEntityDecode` и др.) и помощники `AB.*`.
+
+Загружается первой (в манифесте `<js>library.js</js>` идёт раньше `main.js`), предоставляет помощники:
 
 - `AB.getParam(html, result, 'counter_id', /regexp/, replaces, parser)` — достать значение по регэкспу и записать в счётчик (только если счётчик включён). Можно вызывать как `AB.getParam(html, /regexp/, replaces, parser)` без result — вернёт значение.
 - `AB.checkEmpty(val, 'msg')` — бросить ошибку, если пусто.
@@ -122,6 +127,15 @@ ab-internet-kirzach-telecom/
 - `AB.setCountersToNull(result)`, `AB.regexEscape`, `AB.safeEval` и др.
 
 Полный список возвращается в конце `library.js` (объект-список `AB`).
+
+**Почему библиотека лежит в комплекте провайдера**: провайдер самодостаточен и не зависит от
+изменений модуля в каталоге. Альтернатива (у части провайдеров, например `ab-internet-morton`):
+файл не включать, а в манифесте указать `<depends><module id="library"/>` — библиотека
+подставится при сборке каталога. Оба способа валидны; мы используем первый (как `ab-internet-aido`).
+
+**Как обновить библиотеку**: скопировать свежую сборку из
+`../any-balance-providers/modules/library/build/head/library.min.js` поверх нашей `provider/library.js`
+и пересобрать архив (версию провайдера поднять).
 
 ---
 
