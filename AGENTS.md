@@ -224,7 +224,68 @@ KT_LOGIN=<логин> KT_PASS=<пароль> node test-harness.js
 
 ---
 
-## 7. Правила и грабли (чтобы не наступить снова)
+## 7. Публикация в каталоге AnyBalance (Pull Request)
+
+Каталог https://anybalance.ru/catalog/ строится автоматически из папки `providers/<id>/`
+официального репозитория `dukei/any-balance-providers` — чтобы провайдер появился там,
+нужно добавить его туда через Pull Request (прямых прав на запись у нас нет).
+
+Наш PR: https://github.com/dukei/any-balance-providers/pull/1241 (если его приняли —
+провайдер уже в каталоге; для обновлений — новые PR по той же схеме).
+
+### Требования репозитория
+
+- ID провайдера обязан начинаться с `ab-` и быть уникальным в репо
+  (проверять: `ls providers/ab-...`, `grep -rl "<id" providers/`).
+- В папку провайдера кладутся **только 6 файлов провайдера** (наш вариант — с
+  `library.js`, как у `ab-internet-aido`). Альтернатива: без library.js + в манифесте
+  `<depends><module id="library"/>` (как у `ab-internet-morton`/`grin`).
+- **AGENTS.md / test-harness.js / build-zip.sh / README в PR не попадают** — они про нашу репу.
+- Иконка: до 256×256, до 64 КБ, имя `icon.png`.
+- Лицензионного файла не нужно (у официального репо лицензии нет).
+- Версию в манифесте НЕ сбрасывать: если оставить текущую (например 5), у тех, кто уже
+  ставил провайдера из нашего репо, не будет «отката» на меньшую версию из каталога.
+
+### Форматы сообщений (по конвенциям репо)
+
+Коммит нового провайдера:
+```
+Название (ab-id): - Первая версия провайдера.
+```
+Коммит обновления:
+```
+Название (ab-id): v.N:
+  - что изменилось
+```
+Заголовок PR: `Новый провайдер: Название (ab-id)` (или `Первая версия провайдера (ab-id)`),
+тело — маркированный список: что умеет провайдер, какие счётчики, на чём проверен.
+
+### Как сделать PR (по шагам, проверено)
+
+```bash
+cd ../any-balance-providers          # локальный клон официального репо
+gh repo fork dukei/any-balance-providers --clone=false   # форк на свой GitHub
+git remote add k03mad git@github.com:k03mad/any-balance-providers.git
+# или: gh repo fork ... --remote (добавит remote сам)
+
+git fetch origin
+git checkout -b add-<id> origin/master   # ветка от свежего master
+mkdir -p providers/<id>
+cp ../ab-internet-kirzach-telecom/provider/* providers/<id>/
+# проверить: только нужные файлы, без личных данных (grep)
+git add providers/<id>/
+git commit -m "Название (ab-id): - Первая версия провайдера."
+git push -u k03mad add-<id>
+gh pr create --repo dukei/any-balance-providers --base master \
+  --head k03mad:add-<id> --title "Новый провайдер: Название (ab-id)" --body "..."
+```
+
+Ревью делает мейнтейнер (Dukei / Dmitry Kochin); после мерджа провайдер сам
+появляется в каталоге и его можно ставить прямо из приложения AnyBalance.
+
+---
+
+## 8. Правила и грабли (чтобы не наступить снова)
 
 1. **Версия**: каждый раз +1 в `<id version>` и запись в `history.xml`. Иначе кеш AnyBalance.
 2. **Личные данные**: в репе НЕ должно быть логинов/паролей/ФИО/телефонов реальных
