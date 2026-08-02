@@ -64,18 +64,17 @@ function main(){
 			suspended = true;
 	});
 
-	// Задолженность: при блокировке за неуплату ЛК показывает «Задолженность» равную рекомендуемому платежу
-	var debt = suspended ? (parseFloat(pa && pa.n_recommended_pay) || 0) : 0;
-
-	if (debt) {
-		result.balance = -debt;
-	} else {
-		AB.getParam(pa && pa.n_sum_bal, result, 'balance', null, AB.replaceTagsAndSpaces, AB.parseBalance);
-	}
+	// Баланс — как на сайте (без знака минус)
+	AB.getParam(pa && pa.n_sum_bal, result, 'balance', null, AB.replaceTagsAndSpaces, AB.parseBalance);
 
 	AB.getParam(d.person && d.person.vc_name, result, 'fio', null, AB.replaceTagsAndSpaces);
 	AB.getParam(pa && pa.vc_account, result, 'account', null, AB.replaceTagsAndSpaces);
-	if (!debt)
+	// При блокировке за неуплату сайт показывает «Задолженность» (= n_recommended_pay),
+	// при отсутствии долга — «Рекомендуемый платеж». Отдельные счётчики, без минуса в балансе.
+	var recPay = parseFloat(pa && pa.n_recommended_pay) || 0;
+	if (suspended && recPay)
+		result.debt = recPay; // «Задолженность»
+	else
 		AB.getParam(pa && pa.n_recommended_pay, result, 'recommended_pay', null, AB.replaceTagsAndSpaces, AB.parseBalance);
 	if (pa && pa.d_accounting_begin)
 		AB.getParam(pa.d_accounting_begin, result, 'beg_period', null, AB.replaceTagsAndSpaces, AB.parseDateISO);
