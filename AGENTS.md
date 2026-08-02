@@ -148,9 +148,15 @@ ab-internet-kirzach-telecom/
   - `n_sum_bal` — баланс (строка «0.0»)
   - `vc_account` / `vc_code` — номер лицевого счёта
   - `n_recommended_pay` — рекомендуемый платёж / **сумма задолженности** (когда услуга заблокирована)
-  - `n_last_payment_sum`, `d_last_payment`, `vc_last_payment_type` — последний платёж
+  - `n_last_payment_sum`, `d_last_payment`, `vc_last_payment_type`, `vc_last_payment_bank` — последний платёж
+    (вид + банк показываются одним счётчиком через « / »)
+  - `n_sum_free` / `n_sum_reserved` — свободные и зарезервированные средства
+  - `n_promised_pay_sum`, `promised_payment` — обещанный платёж (сумма и доступность)
   - `d_accounting_begin` / `d_accounting_end` — расчётный период (часто `null`)
 - `person.vc_name` — ФИО
+- `equipment_addresses[0].vc_visual_code` — адрес подключения (счётчик `address`; у главного адреса `main: true`)
+- ВАЖНО: страница `/accounts/<номер>` не содержит новых данных — все поля (включая `n_sum_free`,
+  `n_promised_pay_sum`, `vc_last_payment_bank`) уже есть в `personal_accounts[0]` главной страницы.
 - `servs[]` — услуги/тарифы:
   - `vc_name` — название тарифа (идёт в `__tariff`)
   - `n_good_sum` — стоимость в месяц

@@ -84,8 +84,16 @@ function main(){
 	if (AnyBalance.isAvailable('last_pay_sum', 'last_pay_date', 'last_pay_type')) {
 		AB.getParam(pa && pa.n_last_payment_sum, result, 'last_pay_sum', null, AB.replaceTagsAndSpaces, AB.parseBalance);
 		AB.getParam(pa && pa.d_last_payment, result, 'last_pay_date', null, AB.replaceTagsAndSpaces, AB.parseDateISO);
-		AB.getParam(pa && pa.vc_last_payment_type, result, 'last_pay_type', null, AB.replaceTagsAndSpaces);
+		// Вид последнего платежа + банк, через который он был проведен (например: «Платежная система / Sberbank»)
+		var payType = pa && pa.vc_last_payment_type;
+		if (payType && pa && pa.vc_last_payment_bank)
+			payType += ' / ' + pa.vc_last_payment_bank;
+		AB.getParam(payType, result, 'last_pay_type', null, AB.replaceTagsAndSpaces);
 	}
+
+	// Адрес подключения (главный адрес из equipment_addresses)
+	var addr = (d.equipment_addresses && d.equipment_addresses.length) ? d.equipment_addresses[0].vc_visual_code : null;
+	AB.getParam(addr, result, 'address', null, AB.replaceTagsAndSpaces);
 
 	if (servs.length) {
 		var tariffNames = [], monthlyFee = 0;
