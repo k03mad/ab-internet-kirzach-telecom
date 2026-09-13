@@ -6,7 +6,6 @@ const { execFileSync } = require('child_process');
 const BASE = 'https://lk.kirzhachtelecom.ru';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-let cookies = {}; // name -> value
 let lastStatus = 0;
 const cookieFile = __dirname + '/ck_harness.txt';
 const PROVIDER_DIR = __dirname + '/provider';
@@ -18,20 +17,13 @@ function httpReq(method, path, headers, body) {
   for (const [k, v] of Object.entries(headers || {})) {
     args.push('-H', k + ': ' + v);
   }
-  if (method === 'POST') {
-    if (body) {
-      args.push('--data-binary', body);
-    }
-  }
+  if (method === 'POST' && body)
+    args.push('--data-binary', body);
   args.push(BASE + path);
   const out = execFileSync('curl', args, { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
   const m = /\n(\d{3})$/.exec(out);
   lastStatus = m ? +m[1] : 0;
   return out.replace(/\n\d{3}$/, '');
-}
-
-function encodeForm(params) {
-  return Object.entries(params).map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
 }
 
 function encodeForm(params) {
@@ -50,12 +42,6 @@ const anybalance = {
   Error: function (msg, allowRetry, fatal) {
     this.message = msg; this.allowRetry = allowRetry; this.fatal = fatal;
   },
-  getLastUrl: () => '',
-  getLastResponseHeader: () => null,
-  getLastResponseHeaders: () => [],
-  getCookies: () => Object.entries(cookies).map(([n, v]) => ({ name: n, value: v, domain: 'lk.kirzhachtelecom.ru', path: '/' })),
-  getCookie: (n) => cookies[n],
-  setCookie: (d, n, v) => { if (v === null) delete cookies[n]; else cookies[n] = v; },
 };
 
 // переопределяем requestGet/requestPost на реальный HTTP (синхронно)
@@ -82,7 +68,7 @@ sandbox.window = sandbox;
 
 const ctx = vm.createContext(sandbox);
 
-async function run() {
+function run() {
   // загружаем библиотеку
   const lib = fs.readFileSync(PROVIDER_DIR + '/library.js', 'utf8');
   vm.runInContext(lib, ctx, { filename: 'library.js' });
