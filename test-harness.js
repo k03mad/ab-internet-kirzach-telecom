@@ -9,6 +9,8 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 let lastStatus = 0;
 const cookieFile = __dirname + '/ck_harness.txt';
 const PROVIDER_DIR = __dirname + '/provider';
+// Библиотека AB.* в провайдере не лежит — берём её сборку из официального репо
+const LIB_PATH = __dirname + '/../any-balance-providers/modules/library/build/head/library.min.js';
 
 function httpReq(method, path, headers, body) {
   // синхронный HTTP через curl
@@ -61,7 +63,7 @@ anybalance.requestPost = (url, data, headers) => {
 // ВАЖНО: НЕ передаём String/Array/Object/JSON и пр. в песочницу — vm должен
 // использовать собственные интринсики, иначе библиотека не сможет расширить
 // String.prototype для строк, создаваемых внутри vm.
-const sandbox = { AnyBalance: anybalance, console, setTimeout, clearTimeout, setInterval, clearInterval, process: undefined };
+const sandbox = { AnyBalance: anybalance, console };
 sandbox.global = sandbox;
 sandbox.self = sandbox;
 sandbox.window = sandbox;
@@ -70,7 +72,7 @@ const ctx = vm.createContext(sandbox);
 
 function run() {
   // загружаем библиотеку
-  const lib = fs.readFileSync(PROVIDER_DIR + '/library.js', 'utf8');
+  const lib = fs.readFileSync(LIB_PATH, 'utf8');
   vm.runInContext(lib, ctx, { filename: 'library.js' });
   console.log('library loaded');
 

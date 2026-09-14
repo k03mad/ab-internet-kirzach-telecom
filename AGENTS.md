@@ -27,7 +27,6 @@ ab-internet-kirzach-telecom/
     ├── anybalance-manifest.xml
     ├── preferences.xml
     ├── main.js
-    ├── library.js
     ├── history.xml
     └── icon.png
 ```
@@ -39,7 +38,6 @@ ab-internet-kirzach-telecom/
 | `anybalance-manifest.xml` | Манифест: id, версия, название, описание, автор, **счётчики**, тип, страна |
 | `preferences.xml` | Пользовательские настройки (логин/пароль) |
 | `main.js` | Логика: функция `main()` — вход, парсинг, `AnyBalance.setResult()` |
-| `library.js` | Стандартная библиотека-модуль AnyBalance (помощники `AB.*`). Копия сборки из `../any-balance-providers/modules/library/build/head/library.min.js` |
 | `history.xml` | История версий (обязательно увеличивать при каждом изменении) |
 | `icon.png` | Иконка 128–256px, PNG, до 64 КБ |
 
@@ -54,10 +52,12 @@ ab-internet-kirzach-telecom/
   <name>Киржач Телеком</name>
   <description html="true"><![CDATA[...]]></description>
   <author>K. Molchanov</author>
+  <depends>
+    <module id="library"/>   <!-- библиотека-модуль из каталога -->
+  </depends>
   <files>
     <icon>icon.png</icon>
     <preferences>preferences.xml</preferences>
-    <js>library.js</js>   <!-- библиотека грузится первой -->
     <js>main.js</js>      <!-- файл с main() -->
     <history>history.xml</history>
   </files>
@@ -108,14 +108,17 @@ ab-internet-kirzach-telecom/
 
 ---
 
-## 3. Библиотека `AB.*` (library.js)
+## 3. Библиотека `AB.*` (модуль library)
 
-`library.js` — это **стандартная библиотека-модуль AnyBalance** (готовая, не наша логика):
-минифицированная сборка из официального репо `../any-balance-providers/modules/library/build/head/library.min.js`
-(исходник — `modules/library/source/library.js`). Внутри: расширения стандартных объектов
+Помощники `AB.*` — это **стандартный модуль AnyBalance** (готовый, не наша логика),
+он лежит в официальном репо: `../any-balance-providers/modules/library`
+(сборка — `modules/library/build/head/library.min.js`, исходник — `modules/library/source/library.js`).
+Внутри: расширения стандартных объектов
 (`String.prototype.htmlEntityDecode` и др.) и помощники `AB.*`.
 
-Загружается первой (в манифесте `<js>library.js</js>` идёт раньше `main.js`), предоставляет помощники:
+В нашей репе `library.js` **не хранится**: в манифесте указано
+`<depends><module id="library"/></depends>`, и библиотека подставляется при сборке.
+Предоставляет помощники:
 
 - `AB.getParam(html, result, 'counter_id', /regexp/, replaces, parser)` — достать значение по регэкспу и записать в счётчик (только если счётчик включён). Можно вызывать как `AB.getParam(html, /regexp/, replaces, parser)` без result — вернёт значение.
 - `AB.checkEmpty(val, 'msg')` — бросить ошибку, если пусто.
@@ -126,16 +129,14 @@ ab-internet-kirzach-telecom/
 - `AB.addHeaders(obj)` — объединить с `g_headers`. `AB.joinUrl`. `AB.createFormParams(html, process)` — вытащить поля формы.
 - `AB.setCountersToNull(result)`, `AB.regexEscape`, `AB.safeEval` и др.
 
-Полный список возвращается в конце `library.js` (объект-список `AB`).
+Полный список возвращается в конце сборки модуля (объект-список `AB`).
 
-**Почему библиотека лежит в комплекте провайдера**: провайдер самодостаточен и не зависит от
-изменений модуля в каталоге. Альтернатива (у части провайдеров, например `ab-internet-morton`):
-файл не включать, а в манифесте указать `<depends><module id="library"/>` — библиотека
-подставится при сборке каталога. Оба способа валидны; мы используем первый (как `ab-internet-aido`).
-
-**Как обновить библиотеку**: скопировать свежую сборку из
-`../any-balance-providers/modules/library/build/head/library.min.js` поверх нашей `provider/library.js`
-и пересобрать архив (версию провайдера поднять).
+**Как это работает**: каталог anybalance.ru собирает провайдера скриптом
+`extra/development/tools/build/assemble_provider.js`: он резолвит `<depends>` и вшивает js
+модуля в архив (тег `<files>` переписывается). Наш `build-zip.sh` делает то же для локального
+архива — берёт `library.min.js` из `../any-balance-providers/...` и кладёт в zip, поэтому
+установка «из файла» тоже работает. Обновлять в репе нечего — версия модуля берётся из
+официального репо при сборке.
 
 ---
 
@@ -180,9 +181,9 @@ ab-internet-kirzach-telecom/
 
 ЛК показывает баланс из `n_sum_bal` (всегда без минуса). При блокировке за неуплату
 (`n_good_state_id == 8114` у любой услуги) сайт показывает **«Задолженность»** равную
-`n_recommended_pay` — провайдер выдаёт её отдельным счётчиком `debt` (положительным).
-Когда долга нет — `n_recommended_pay` показывается счётчиком `recommended_pay`
-(«Рекомендуемый платеж»). Баланс при этом всегда = `n_sum_bal`, без знака минус.
+`n_recommended_pay` — провайдер пишет её в `balance` **со знаком минус** (отдельного
+счётчика `debt` нет с версии 7). Когда долга нет — `balance` = `n_sum_bal`, а
+`n_recommended_pay` показывается счётчиком `recommended_pay` («Рекомендуемый платеж»).
 
 ---
 
@@ -197,7 +198,8 @@ ab-internet-kirzach-telecom/
 KT_LOGIN=<логин> KT_PASS=<пароль> node test-harness.js
 ```
 
-Что делает: грузит `library.js` и `main.js` в vm-песочницу, вызывает `main()`,
+Что делает: грузит библиотеку (сборку из `../any-balance-providers/modules/library/build/head/library.min.js`)
+и `main.js` в vm-песочницу, вызывает `main()`,
 печатает запросы, trace-сообщения и итоговый `result`.
 
 ### Грабли тестового стенда
@@ -219,14 +221,15 @@ KT_LOGIN=<логин> KT_PASS=<пароль> node test-harness.js
 
 ## 6. Сборка архива
 
-Архив — zip с 6 файлами провайдера **в корне** (без вложенной папки!).
+Архив — zip с 5 файлами провайдера **в корне** (без вложенной папки!), плюс
+вшитая в архив библиотека `library.min.js` (см. §3).
 Просто запустить из корня репы:
 
 ```bash
 ./build-zip.sh
 ```
 
-Скрипт проверяет наличие всех 6 файлов, собирает
+Скрипт проверяет наличие всех 5 файлов провайдера и библиотеки модуля, собирает
 `install-zip/ab-internet-kirzach-telecom.zip` (через python3 zipfile — утилиты `zip`
 в Termux нет) и печатает список файлов архива.
 
@@ -252,9 +255,9 @@ KT_LOGIN=<логин> KT_PASS=<пароль> node test-harness.js
 
 - ID провайдера обязан начинаться с `ab-` и быть уникальным в репо
   (проверять: `ls providers/ab-...`, `grep -rl "<id" providers/`).
-- В папку провайдера кладутся **только 6 файлов провайдера** (наш вариант — с
-  `library.js`, как у `ab-internet-aido`). Альтернатива: без library.js + в манифесте
-  `<depends><module id="library"/>` (как у `ab-internet-morton`/`grin`).
+- В папку провайдера кладутся **только 5 файлов провайдера** (наша библиотека `library.js`
+  не хранится — в манифесте вместо неё `<depends><module id="library"/>`, как у
+  `ab-internet-morton`/`grin`).
 - **AGENTS.md / test-harness.js / build-zip.sh / README в PR не попадают** — они про нашу репу.
 - Иконка: до 256×256, до 64 КБ, имя `icon.png`.
 - Лицензионного файла не нужно (у официального репо лицензии нет).
@@ -316,3 +319,7 @@ gh pr create --repo dukei/any-balance-providers --base master \
 8. Если в ЛК появится новый биллинг (сайт переедет) — искать `new HupoApp(` в HTML;
    если его нет — изучать новую структуру по аналогии с другими провайдерами из
    `../any-balance-providers/providers/`.
+9. **`depends` при установке из файла НЕ резолвится**: приложение выполняет только `<js>`
+   из `<files>`. Проверено на depends-only zip — установка из файла без вшитой библиотеки
+   не работает. Поэтому `build-zip.sh` обязан вшивать `library.min.js` в архив (как это делает
+   сборка каталога `assemble_provider.js`). В PR для каталога всё равно идёт 5 файлов + `depends`.
